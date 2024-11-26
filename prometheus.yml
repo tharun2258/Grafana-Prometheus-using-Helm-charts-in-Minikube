@@ -5,8 +5,21 @@ scrape_configs:
   # Scrape Prometheus itself
   - job_name: 'prometheus'
     static_configs:
-      - targets: ['localhost:9090']  
+      - targets: ['localhost:9090']
+        labels:
+          app: 'prometheus'
+          instance: 'localhost'
+          environment: 'development'  
 
+  # Scrape Kubernetes pods
   - job_name: 'kubernetes'
     kubernetes_sd_configs:
       - role: pod
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_label_app]
+        target_label: app
+      - source_labels: [__meta_kubernetes_namespace]
+        target_label: namespace
+      - source_labels: [__meta_kubernetes_pod_name]
+        target_label: pod_name
+    
