@@ -4,9 +4,7 @@ on:
   push:
     branches:
       - dev
-    paths:
-      - 'prometheus.yml'
-      - 'grafana_dashboard.json'
+    
 
 jobs:
   deploy:
