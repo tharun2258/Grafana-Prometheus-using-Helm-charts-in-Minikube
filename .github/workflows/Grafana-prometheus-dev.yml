@@ -1,0 +1,72 @@
+name: Setup Monitoring with Prometheus and Grafana
+
+on:
+  push:
+    branches:
+      - dev
+    paths:
+      - 'prometheus.yml'
+      - 'grafana_dashboard.json'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      # Step 2: Install Minikube
+      - name: Install Minikube
+        run: |
+          curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+          sudo install minikube-linux-amd64 /usr/local/bin/minikube
+
+      # Step 3: Start Minikube (Create a local Kubernetes cluster)
+      - name: Start Minikube
+        run: |
+          minikube start --driver=docker  # You can specify a different driver if needed, such as virtualbox or docker
+
+      # Step 4: Set up kubectl to use Minikube
+      - name: Set up kubectl
+        run: |
+          kubectl alias helm='kubectl'  # Optional: Adds Helm alias for convenience
+          kubectl config use-context minikube  # This tells kubectl to use the Minikube cluster
+
+      # Step 5: Set up Helm
+      - name: Set up Helm
+        uses: azure/setup-helm@v1
+
+      # Step 6: Deploy Prometheus using Helm
+      - name: Deploy Prometheus on Kubernetes
+        run: |
+          helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+          helm repo update
+          helm upgrade --install prometheus prometheus-community/prometheus -f prometheus-values.yaml
+
+      # Step 7: Deploy Grafana using Helm
+      - name: Deploy Grafana on Kubernetes
+        run: |
+          helm repo add grafana https://grafana.github.io/helm-charts
+          helm repo update
+          helm upgrade --install grafana grafana/grafana -f grafana-values.yaml
+
+      # Step 8: Update Prometheus Configuration
+      - name: Update Prometheus Configuration
+        run: |
+          kubectl apply -f prometheus.yml  # Apply Prometheus configuration
+
+      # Step 9: Update Grafana Dashboard
+      - name: Update Grafana Dashboard
+        run: |
+          kubectl port-forward svc/grafana 3000:80 &  # Expose Grafana service locally
+          sleep 10  # Wait for the service to be accessible
+          curl -X POST -H "Content-Type: application/json" \
+          -d @grafana_dashboard.json \
+          http://admin:admin@localhost:3000/api/dashboards/db  # Push dashboard JSON to Grafana
+
+      # Step 10: Set up Alerts for Prometheus
+      - name: Setup Alerts for Prometheus
+        run: |
+          kubectl apply -f alert.rules.yml  # Apply Prometheus alerting rules
