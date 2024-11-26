@@ -1,0 +1,28 @@
+{
+  "dashboard": {
+    "id": null,
+    "uid": "prometheus-dashboard",
+    "title": "Prometheus Monitoring Dashboard",
+    "tags": ["prometheus", "monitoring"],
+    "timezone": "browser",
+    "schemaVersion": 26,
+    "version": 1,
+    "panels": [
+      {
+        "type": "graph",
+        "title": "Prometheus Server Health",
+        "targets": [
+          {
+            "expr": "up{job='prometheus'}",
+            "interval": "",
+            "legendFormat": "Prometheus Server",
+            "refId": "A"
+          }
+        ],
+        "datasource": "Prometheus"
+      }
+    ]
+  },
+  "folderId": 0,
+  "overwrite": true
+}
