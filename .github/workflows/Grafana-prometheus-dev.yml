@@ -102,6 +102,11 @@ jobs:
           kubectl get svc prometheus-server
           kubectl get svc grafana
 
+          minikube service rometheus-server --url
+          minikube service grafana --url
+
+
+
 
       # Step 14: Update Grafana Dashboard
       - name: Update Grafana Dashboard
