@@ -71,7 +71,7 @@ jobs:
            # Once the pod is running, perform port-forwarding
            kubectl port-forward svc/prometheus-server 9090:80 & 
            # Prometheus typically runs on port 9090
-           sleep 10  # Wait for Prometheus to be ready (can be adjusted)
+           sleep 120  # Wait for Prometheus to be ready (can be adjusted)
 
 
       # Step 11: Expose Grafana service locally
@@ -84,7 +84,7 @@ jobs:
           # Once the pod is running, perform port-forwarding
           kubectl port-forward svc/grafana 3000:80 & 
           # Grafana typically runs on port 3000
-          sleep 10  # Wait for Grafana to be ready (can be adjusted)
+          sleep 120  # Wait for Grafana to be ready (can be adjusted)
 
 
       # Step 12: Check if Prometheus is accessible
