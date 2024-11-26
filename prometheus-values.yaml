@@ -1,11 +1,11 @@
 server:
   persistentVolume:
     enabled: true
-    size: 8Gi
+    size: 40Gi
   resources:
     requests:
       memory: "2Gi"
       cpu: "1"
     limits:
-      memory: "4Gi"
-      cpu: "2"
+      memory: "40Gi"
+      cpu: "8"
