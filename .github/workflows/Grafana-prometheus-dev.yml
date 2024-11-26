@@ -3,8 +3,10 @@ name: Setup Monitoring with Prometheus and Grafana
 on:
   push:
     branches:
-      - dev
-    
+      - main
+    paths:
+      - 'prometheus.yml'
+      - 'grafana_dashboard.json'
 
 jobs:
   deploy:
@@ -29,8 +31,6 @@ jobs:
       # Step 4: Set up kubectl to use Minikube
       - name: Set up kubectl
         run: |
-          # Set an alias for Helm to use kubectl commands (just for convenience in this workflow)
-          echo "alias helm='kubectl'" >> $GITHUB_ENV
           kubectl config use-context minikube  # This tells kubectl to use the Minikube cluster
 
       # Step 5: Set up Helm (Install a stable version)
@@ -39,48 +39,53 @@ jobs:
           curl https://get.helm.sh/helm-v3.8.0-linux-amd64.tar.gz | tar -xz
           sudo mv linux-amd64/helm /usr/local/bin/helm
 
-
-      # Step 7: Add Helm Repositories
+      # Step 6: Add Helm Repositories
       - name: Add Helm Repositories
         run: |
           helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
           helm repo add grafana https://grafana.github.io/helm-charts
           helm repo update  # Ensure repositories are updated
-          
-  
-      - name: Check Helm Version
-        run: helm version
 
-
-      # Step 7: Initialize Helm repositories (Ensure Helm repo is set up correctly)
-      - name: Initialize Helm Repositories
-        run: |
-          helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-          helm repo add grafana https://grafana.github.io/helm-charts
-          helm repo update  # Ensure repositories are updated
-
-      # Step 8: Deploy Prometheus using Helm
+      # Step 7: Deploy Prometheus using Helm
       - name: Deploy Prometheus on Kubernetes
         run: |
-          mkdir -p /home/runner/.helm/repository  
-          # Create the repository directory if it doesn't exist
-          touch /home/runner/.helm/repository/repositories.yaml  # Create the repositories.yaml file
-          helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-          helm repo update
-          
+          helm upgrade --install prometheus prometheus-community/prometheus -f prometheus-values.yaml
 
-      - name: List Helm Repository Directory
-        run: |
-          ls -la /home/runner/.helm/repository  # Check the contents of the repository directory
-
-      # Step 9: Deploy Grafana using Helm
+      # Step 8: Deploy Grafana using Helm
       - name: Deploy Grafana on Kubernetes
         run: |
-          helm repo add grafana https://grafana.github.io/helm-charts
-          helm repo update
-          
+          helm upgrade --install grafana grafana/grafana -f grafana-values.yaml
 
-      
+      # Step 9: Check Running Pods
+      - name: Check running pods
+        run: |
+          kubectl get pods --all-namespaces
 
-     
-      
+      # Step 10: Expose Prometheus service locally
+      - name: Expose Prometheus service locally
+        run: |
+          kubectl port-forward svc/prometheus-server 9090:80 &  # Prometheus typically runs on port 9090
+          sleep 10  # Wait for Prometheus to be ready
+
+      # Step 11: Expose Grafana service locally
+      - name: Expose Grafana service locally
+        run: |
+          kubectl port-forward svc/grafana 3000:80 &  # Grafana typically runs on port 3000
+          sleep 10  # Wait for Grafana to be ready
+
+      # Step 12: Check if Prometheus is accessible
+      - name: Check Prometheus URL
+        run: |
+          curl http://localhost:9090
+
+      # Step 13: Check if Grafana is accessible
+      - name: Check Grafana URL
+        run: |
+          curl http://localhost:3000
+
+      # Step 14: Update Grafana Dashboard
+      - name: Update Grafana Dashboard
+        run: |
+          curl -X POST -H "Content-Type: application/json" \
+          -d @grafana_dashboard.json \
+          http://admin:admin@localhost:3000/api/dashboards/db
