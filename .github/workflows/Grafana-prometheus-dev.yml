@@ -37,26 +37,33 @@ jobs:
       - name: Set up Helm
         uses: azure/setup-helm@v1
 
-      # Step 6: Deploy Prometheus using Helm
+      # Step 6: Initialize Helm repositories (Ensure Helm repo is set up correctly)
+      - name: Initialize Helm Repositories
+        run: |
+          helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+          helm repo add grafana https://grafana.github.io/helm-charts
+          helm repo update  # Ensure repositories are updated
+
+      # Step 7: Deploy Prometheus using Helm
       - name: Deploy Prometheus on Kubernetes
         run: |
           helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
           helm repo update
           helm upgrade --install prometheus prometheus-community/prometheus -f prometheus-values.yaml
 
-      # Step 7: Deploy Grafana using Helm
+      # Step 8: Deploy Grafana using Helm
       - name: Deploy Grafana on Kubernetes
         run: |
           helm repo add grafana https://grafana.github.io/helm-charts
           helm repo update
           helm upgrade --install grafana grafana/grafana -f grafana-values.yaml
 
-      # Step 8: Update Prometheus Configuration
+      # Step 9: Update Prometheus Configuration
       - name: Update Prometheus Configuration
         run: |
           kubectl apply -f prometheus.yml  # Apply Prometheus configuration
 
-      # Step 9: Update Grafana Dashboard
+      # Step 10: Update Grafana Dashboard
       - name: Update Grafana Dashboard
         run: |
           kubectl port-forward svc/grafana 3000:80 &  # Expose Grafana service locally
@@ -65,7 +72,7 @@ jobs:
           -d @grafana_dashboard.json \
           http://admin:admin@localhost:3000/api/dashboards/db  # Push dashboard JSON to Grafana
 
-      # Step 10: Set up Alerts for Prometheus
+      # Step 11: Set up Alerts for Prometheus
       - name: Setup Alerts for Prometheus
         run: |
           kubectl apply -f alert.rules.yml  # Apply Prometheus alerting rules
