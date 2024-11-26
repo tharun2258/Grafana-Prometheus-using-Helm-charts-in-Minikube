@@ -56,10 +56,12 @@ jobs:
         run: |
           helm upgrade --install grafana grafana/grafana -f grafana-values.yaml
 
-      # Step 9: Check Running Pods
+      # Step 9: Check Running Pods and labels
       - name: Check running pods
         run: |
           kubectl get pods --all-namespaces
+          kubectl get pods --show-labels
+
 
       # Step 10: Expose Prometheus service locally
       - name: Expose Prometheus service locally
