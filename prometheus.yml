@@ -2,9 +2,10 @@ global:
   scrape_interval: 15s  # The default interval for scraping metrics
 
 scrape_configs:
+  # Scrape Prometheus itself
   - job_name: 'prometheus'
     static_configs:
-      - targets: ['localhost:9090']  # Scrape Prometheus itself
+      - targets: ['localhost:9090']  
 
   - job_name: 'kubernetes'
     kubernetes_sd_configs:
