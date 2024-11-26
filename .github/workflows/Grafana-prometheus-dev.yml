@@ -40,6 +40,9 @@ jobs:
       # Step 6: Initialize Helm repositories (Ensure Helm repo is set up correctly)
       - name: Initialize Helm Repositories
         run: |
+          mkdir -p /home/runner/.helm/repository
+          echo "apiVersion: v1" > /home/runner/.helm/repository/repositories.yaml
+          echo "repositories:" >> /home/runner/.helm/repository/repositories.yaml
           helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
           helm repo add grafana https://grafana.github.io/helm-charts
           helm repo update  # Ensure repositories are updated
