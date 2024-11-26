@@ -11,7 +11,7 @@ scrape_configs:
           instance: 'localhost'
           environment: 'development'   
 
-  # Scrape Kubernetes pods
+  # Scrape Kubernetes pods 
   - job_name: 'kubernetes'
     kubernetes_sd_configs:
       - role: pod
