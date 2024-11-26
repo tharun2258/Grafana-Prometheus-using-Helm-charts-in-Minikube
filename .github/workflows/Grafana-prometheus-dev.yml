@@ -37,36 +37,40 @@ jobs:
       - name: Set up Helm
         uses: azure/setup-helm@v1
 
-      # Step 6: Initialize Helm repositories (Ensure Helm repo is set up correctly)
+      # Step 6: Clear Helm Cache (Fix potential repository issues)
+      - name: Clear Helm Cache
+        run: |
+          helm repo remove prometheus-community || true  # Removes repository if it already exists
+          helm repo remove grafana || true  # Removes repository if it already exists
+          rm -rf /home/runner/.helm/repository/cache  # Clear the cache directory to avoid old cached data
+
+      # Step 7: Initialize Helm repositories (Ensure Helm repo is set up correctly)
       - name: Initialize Helm Repositories
         run: |
-          mkdir -p /home/runner/.helm/repository
-          echo "apiVersion: v1" > /home/runner/.helm/repository/repositories.yaml
-          echo "repositories:" >> /home/runner/.helm/repository/repositories.yaml
           helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
           helm repo add grafana https://grafana.github.io/helm-charts
           helm repo update  # Ensure repositories are updated
 
-      # Step 7: Deploy Prometheus using Helm
+      # Step 8: Deploy Prometheus using Helm
       - name: Deploy Prometheus on Kubernetes
         run: |
           helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
           helm repo update
           helm upgrade --install prometheus prometheus-community/prometheus -f prometheus-values.yaml
 
-      # Step 8: Deploy Grafana using Helm
+      # Step 9: Deploy Grafana using Helm
       - name: Deploy Grafana on Kubernetes
         run: |
           helm repo add grafana https://grafana.github.io/helm-charts
           helm repo update
           helm upgrade --install grafana grafana/grafana -f grafana-values.yaml
 
-      # Step 9: Update Prometheus Configuration
+      # Step 10: Update Prometheus Configuration
       - name: Update Prometheus Configuration
         run: |
           kubectl apply -f prometheus.yml  # Apply Prometheus configuration
 
-      # Step 10: Update Grafana Dashboard
+      # Step 11: Update Grafana Dashboard
       - name: Update Grafana Dashboard
         run: |
           kubectl port-forward svc/grafana 3000:80 &  # Expose Grafana service locally
@@ -75,7 +79,7 @@ jobs:
           -d @grafana_dashboard.json \
           http://admin:admin@localhost:3000/api/dashboards/db  # Push dashboard JSON to Grafana
 
-      # Step 11: Set up Alerts for Prometheus
+      # Step 12: Set up Alerts for Prometheus
       - name: Setup Alerts for Prometheus
         run: |
           kubectl apply -f alert.rules.yml  # Apply Prometheus alerting rules
