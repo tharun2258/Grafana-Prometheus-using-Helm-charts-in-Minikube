@@ -67,7 +67,7 @@ jobs:
       - name: Expose Prometheus service locally
         run: |
            # Wait for the Prometheus pod to be in Running state
-           kubectl wait --for=condition=ready pod -l app=prometheus --timeout=600s  
+           kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=prometheus --timeout=600s  
            # Adjust the label and timeout if needed
 
            # Once the pod is running, perform port-forwarding
@@ -80,7 +80,7 @@ jobs:
       - name: Expose Grafana service locally
         run: |
           # Wait for the Grafana pod to be in Running state
-          kubectl wait --for=condition=ready pod -l app=grafana --timeout=600s  
+          kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=grafana --timeout=600s  
           # Adjust the label and timeout if needed
 
           # Once the pod is running, perform port-forwarding
