@@ -102,7 +102,7 @@ jobs:
           kubectl get svc prometheus-server
           kubectl get svc grafana
 
-          minikube service rometheus-server --url
+          minikube service prometheus-server --url
           minikube service grafana --url
 
 
