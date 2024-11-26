@@ -82,13 +82,5 @@ jobs:
 
       
 
-      # Step 10: Update Grafana Dashboard
-      - name: Update Grafana Dashboard
-        run: |
-          kubectl port-forward svc/grafana 3000:80 &  # Expose Grafana service locally
-          sleep 10  # Wait for the service to be accessible
-          curl -X POST -H "Content-Type: application/json" \
-          -d @grafana_dashboard.json \
-          http://admin:admin@localhost:3000/api/dashboards/db  # Push dashboard JSON to Grafana
-
+     
       
