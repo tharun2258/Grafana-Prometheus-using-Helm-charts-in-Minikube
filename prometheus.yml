@@ -9,7 +9,7 @@ scrape_configs:
         labels:
           app: 'prometheus'
           instance: 'localhost'
-          environment: 'development'  
+          environment: 'development'   
 
   # Scrape Kubernetes pods
   - job_name: 'kubernetes'
