@@ -3,7 +3,7 @@ name: Setup Monitoring with Prometheus and Grafana
 on:
   push:
     branches:
-      - main
+      - dev
     paths:
       - 'prometheus.yml'
       - 'grafana_dashboard.json'
