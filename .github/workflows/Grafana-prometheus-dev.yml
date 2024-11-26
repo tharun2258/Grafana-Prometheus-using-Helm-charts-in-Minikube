@@ -80,12 +80,9 @@ jobs:
           helm repo update
           
 
-      # Step 10: Update Prometheus Configuration
-      - name: Update Prometheus Configuration
-        run: |
-          kubectl apply -f prometheus.yml  # Apply Prometheus configuration
+      
 
-      # Step 11: Update Grafana Dashboard
+      # Step 10: Update Grafana Dashboard
       - name: Update Grafana Dashboard
         run: |
           kubectl port-forward svc/grafana 3000:80 &  # Expose Grafana service locally
@@ -94,7 +91,4 @@ jobs:
           -d @grafana_dashboard.json \
           http://admin:admin@localhost:3000/api/dashboards/db  # Push dashboard JSON to Grafana
 
-      # Step 12: Set up Alerts for Prometheus
-      - name: Setup Alerts for Prometheus
-        run: |
-          kubectl apply -f alert.rules.yml  # Apply Prometheus alerting rules
+      
