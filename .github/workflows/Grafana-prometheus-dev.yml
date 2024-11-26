@@ -37,12 +37,10 @@ jobs:
       - name: Set up Helm
         uses: azure/setup-helm@v1
 
-      # Step 6: Clear Helm Cache (Fix potential repository issues)
-      - name: Clear Helm Cache
-        run: |
-          helm repo remove prometheus-community || true  # Removes repository if it already exists
-          helm repo remove grafana || true  # Removes repository if it already exists
-          rm -rf /home/runner/.helm/repository/cache  # Clear the cache directory to avoid old cached data
+      # Step 6: helm version
+      - name: Check Helm Version
+        run: helm version
+
 
       # Step 7: Initialize Helm repositories (Ensure Helm repo is set up correctly)
       - name: Initialize Helm Repositories
@@ -54,9 +52,16 @@ jobs:
       # Step 8: Deploy Prometheus using Helm
       - name: Deploy Prometheus on Kubernetes
         run: |
+          mkdir -p /home/runner/.helm/repository  
+          # Create the repository directory if it doesn't exist
+          touch /home/runner/.helm/repository/repositories.yaml  # Create the repositories.yaml file
           helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
           helm repo update
           helm upgrade --install prometheus prometheus-community/prometheus -f prometheus-values.yaml
+
+      - name: List Helm Repository Directory
+        run: |
+          ls -la /home/runner/.helm/repository  # Check the contents of the repository directory
 
       # Step 9: Deploy Grafana using Helm
       - name: Deploy Grafana on Kubernetes
