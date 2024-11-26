@@ -29,7 +29,8 @@ jobs:
       # Step 4: Set up kubectl to use Minikube
       - name: Set up kubectl
         run: |
-          kubectl alias helm='kubectl'  # Optional: Adds Helm alias for convenience
+          # Set an alias for Helm to use kubectl commands (just for convenience in this workflow)
+          echo "alias helm='kubectl'" >> $GITHUB_ENV
           kubectl config use-context minikube  # This tells kubectl to use the Minikube cluster
 
       # Step 5: Set up Helm
