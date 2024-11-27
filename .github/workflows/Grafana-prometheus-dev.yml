@@ -105,14 +105,15 @@ jobs:
           minikube service prometheus-server --url
           minikube service grafana --url
 
-
-
-
-      # Step 14: Update Grafana Dashboard
-      - name: Update Grafana Dashboard
+     # Step 10: Validate if Prometheus and Grafana are working
+      - name: Validate Prometheus and Grafana
         run: |
-          curl -X POST -H "Content-Type: application/json" \
-          -d @grafana_dashboard.json \
-          http://admin:admin@localhost:3000/api/dashboards/db
+          # Validate Prometheus by accessing the Prometheus web UI
+          curl --max-time 10 http://localhost:9090/metrics || exit 1
+          echo "Prometheus is working"
+
+          # Validate Grafana by checking if the dashboard can be loaded
+          curl --max-time 10 http://localhost:3000/api/dashboards/home || exit 1
+          echo "Grafana is working"
 
       
