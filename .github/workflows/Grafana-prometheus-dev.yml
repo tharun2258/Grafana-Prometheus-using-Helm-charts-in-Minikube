@@ -1,0 +1,119 @@
+name: Setup Monitoring with Prometheus and Grafana
+
+on:
+  push:
+    branches:
+      - dev
+    paths:
+      - 'prometheus.yml'
+      - 'grafana_dashboard.json'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      # Step 2: Install Minikube
+      - name: Install Minikube
+        run: |
+          curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+          sudo install minikube-linux-amd64 /usr/local/bin/minikube
+
+      # Step 3: Start Minikube (Create a local Kubernetes cluster)
+      - name: Start Minikube
+        run: |
+          minikube start --driver=docker  # You can specify a different driver if needed, such as virtualbox or docker
+
+      # Step 4: Set up kubectl to use Minikube
+      - name: Set up kubectl
+        run: |
+          kubectl config use-context minikube  # This tells kubectl to use the Minikube cluster
+
+      # Step 5: Set up Helm (Install a stable version)
+      - name: Install Helm
+        run: |
+          curl https://get.helm.sh/helm-v3.8.0-linux-amd64.tar.gz | tar -xz
+          sudo mv linux-amd64/helm /usr/local/bin/helm
+
+      # Step 6: Add Helm Repositories
+      - name: Add Helm Repositories
+        run: |
+          helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+          helm repo add grafana https://grafana.github.io/helm-charts
+          helm repo update  # Ensure repositories are updated
+
+      # Step 7: Deploy Prometheus using Helm
+      - name: Deploy Prometheus on Kubernetes
+        run: |
+          helm upgrade --install prometheus prometheus-community/prometheus -f prometheus-values.yaml
+
+      # Step 8: Deploy Grafana using Helm
+      - name: Deploy Grafana on Kubernetes
+        run: |
+          helm upgrade --install grafana grafana/grafana -f grafana-values.yaml
+
+      # Step 9: Check Running Pods and labels
+      - name: Check running pods
+        run: |
+          kubectl get pods --all-namespaces
+          kubectl get pods --show-labels
+
+
+      # Step 10: Expose Prometheus service locally
+      - name: Expose Prometheus service locally
+        run: |
+           # Wait for the Prometheus pod to be in Running state
+           kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=prometheus --timeout=600s  
+           # Adjust the label and timeout if needed
+
+           # Once the pod is running, perform port-forwarding
+           kubectl port-forward svc/prometheus-server 9090:80 & 
+           # Prometheus typically runs on port 9090
+           sleep 120  # Wait for Prometheus to be ready (can be adjusted)
+
+
+      # Step 11: Expose Grafana service locally
+      - name: Expose Grafana service locally
+        run: |
+          # Wait for the Grafana pod to be in Running state
+          kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=grafana --timeout=600s  
+          # Adjust the label and timeout if needed
+
+          # Once the pod is running, perform port-forwarding
+          kubectl port-forward svc/grafana 3000:80 & 
+          # Grafana typically runs on port 3000
+          sleep 120  # Wait for Grafana to be ready (can be adjusted)
+
+
+      # Step 12: Check if Prometheus is accessible
+      - name: Check Prometheus URL
+        run: |
+          curl http://localhost:9090
+
+      # Step 13: Check if Grafana is accessible
+      - name: Check Grafana URL
+        run: |
+          curl http://localhost:3000
+
+          kubectl get svc prometheus-server
+          kubectl get svc grafana
+
+          minikube service prometheus-server --url
+          minikube service grafana --url
+
+     # Step 10: Validate if Prometheus and Grafana are working
+      - name: Validate Prometheus and Grafana
+        run: |
+          # Validate Prometheus by accessing the Prometheus web UI
+          curl --max-time 10 http://localhost:9090/metrics || exit 1
+          echo "Prometheus is working"
+
+          # Validate Grafana by checking if the dashboard can be loaded
+          curl --max-time 10 http://localhost:3000/api/dashboards/home || exit 1
+          echo "Grafana is working"
+
+      

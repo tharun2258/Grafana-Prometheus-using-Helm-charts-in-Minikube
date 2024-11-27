@@ -1,0 +1,7 @@
+adminPassword: "admin"  # Set the admin password
+persistence:
+  enabled: true
+  size: 10Gi
+service:
+  type: LoadBalancer
+  port: 80
