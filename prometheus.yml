@@ -3,7 +3,7 @@ global:
 
 scrape_configs:
   # Scrape Prometheus itself
-  - job_name: 'prometheus'
+  - job_name: 'prometheus' 
     static_configs: 
       - targets: ['localhost:9090']
         labels: 
