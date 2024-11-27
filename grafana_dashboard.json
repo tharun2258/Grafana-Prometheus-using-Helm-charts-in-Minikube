@@ -1,5 +1,5 @@
 {
-  "dashboard": {
+  "dashboard": { 
     "id": null,
     "uid": "prometheus-dashboard",
     "title": "Prometheus Monitoring Dashboard",
